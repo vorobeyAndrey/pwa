@@ -1,25 +1,30 @@
 (function () {
   'use strict';
-  self.addEventListener('install', event => {
-    console.log('V1 installing…');
-  
-    // cache a cat SVG
-    // event.waitUntil(
-    //   caches.open('static-v1').then(cache => cache.add('/cat.svg'))
-    // );
+  self.addEventListener('install', (event) => {
+    console.log('Установлен', event);
+    self.addEventListener('fetch', (event) => {
+      console.log('Происходит запрос на сервер');
   });
-  
-  self.addEventListener('activate', event => {
-    console.log('V1 now ready to handle fetches!');
+});
+
+self.addEventListener('activate', (event) => {
+    console.log('Активирован');
+});
+
+self.addEventListener('fetch', (event) => {
+    console.log('Происходит запрос на сервер');
+    self.clients.matchAll().then((clients) => {
+      clients.forEach((client) => {
+          // Подробнее про ETag можно прочитать тут
+          // https://en.wikipedia.org/wiki/HTTP_ETag
+          const message = {
+              type: 'refresh',
+              url: 'response.url',
+              eTag: '123'
+          };
+          // Уведомляем клиент об обновлении данных.
+          client.postMessage(JSON.stringify(message));
+      });
   });
-  
-  self.addEventListener('fetch', event => {
-    const url = new URL(event.request.url);
-    console.log('fetch', url)
-    // serve the cat SVG from the cache if the request is
-    // same-origin and the path is '/dog.svg'
-    // if (url.origin == location.origin && url.pathname == '/dog.svg') {
-    //   event.respondWith(caches.match('/cat.svg'));
-    // }
-  });
+});
 }());
